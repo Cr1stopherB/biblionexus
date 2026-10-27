@@ -45,20 +45,24 @@ public class CatalogController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createBook(@RequestBody BookDTO book) {
+    public ResponseEntity<String> createBook(@RequestBody Map<String, Object> body) {
         String url = supabaseUrl.replaceAll("/+$", "") + "/rest/v1/libros";
 
         HttpHeaders headers = createSupabaseHeaders();
         headers.set("Prefer", "return=representation");
 
-        // Map exacto con las columnas que existen en tu tabla de Supabase
+        // Evaluamos si copias viene definido y > 0 para el boolean 'disponible'
+        Object copiasObj = body.get("copias");
+        boolean isAvailable = true;
+        if (copiasObj instanceof Number) {
+            isAvailable = ((Number) copiasObj).intValue() > 0;
+        }
+
         Map<String, Object> payload = new HashMap<>();
-        payload.put("titulo", book.getTitulo());
-        payload.put("autor", book.getAutor());
-        payload.put("categoria", book.getCategoria() != null ? book.getCategoria() : "General");
-        // Convertimos las copias a boolean para la columna 'disponible' (si copias > 0
-        // -> true)
-        payload.put("disponible", book.getCopias() == null || book.getCopias() > 0);
+        payload.put("titulo", body.get("titulo"));
+        payload.put("autor", body.get("autor"));
+        payload.put("categoria", body.getOrDefault("categoria", "General"));
+        payload.put("disponible", isAvailable);
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
 

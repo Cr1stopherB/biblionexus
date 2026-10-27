@@ -4,32 +4,69 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BookDTO {
 
-    private Long id;
+    private String id;
+
+    @JsonProperty("titulo")
     private String titulo;
+
+    @JsonProperty("autor")
     private String autor;
+
+    @JsonProperty("categoria")
     private String categoria;
-    private boolean disponible;
 
-    @JsonProperty("created_at")
-    private String createdAt;
+    @JsonProperty("copias")
+    private Integer copias;
 
-    public BookDTO() {}
+    @JsonProperty("disponible")
+    private Boolean disponible;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // Getters y Setters
+    public String getId() {
+        return id;
+    }
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getAutor() { return autor; }
-    public void setAutor(String autor) { this.autor = autor; }
+    public String getTitulo() {
+        return titulo;
+    }
 
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
 
-    public boolean isDisponible() { return disponible; }
-    public void setDisponible(boolean disponible) { this.disponible = disponible; }
+    public String getAutor() {
+        return autor;
+    }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setAutor(String autor) {
+        this.autor = autor;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public Integer getCopias() {
+        return copias;
+    }
+
+    public void setCopias(Integer copias) {
+        this.copias = copias;
+    }
+
+    public Boolean getDisponible() {
+        return disponible;
+    }
+
+    public void setDisponible(Boolean disponible) {
+        this.disponible = disponible;
+    }
 }
