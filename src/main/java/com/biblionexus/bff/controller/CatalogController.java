@@ -7,7 +7,9 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/books")
@@ -49,7 +51,16 @@ public class CatalogController {
         HttpHeaders headers = createSupabaseHeaders();
         headers.set("Prefer", "return=representation");
 
-        HttpEntity<BookDTO> requestEntity = new HttpEntity<>(book, headers);
+        // Map exacto con las columnas que existen en tu tabla de Supabase
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("titulo", book.getTitulo());
+        payload.put("autor", book.getAutor());
+        payload.put("categoria", book.getCategoria() != null ? book.getCategoria() : "General");
+        // Convertimos las copias a boolean para la columna 'disponible' (si copias > 0
+        // -> true)
+        payload.put("disponible", book.getCopias() == null || book.getCopias() > 0);
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
@@ -59,7 +70,9 @@ public class CatalogController {
                     String.class);
             return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Error al guardar libro en Supabase");
+            System.err.println("Error en Supabase: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body("Error al guardar libro en Supabase: " + e.getMessage());
         }
     }
 
