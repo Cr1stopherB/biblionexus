@@ -11,6 +11,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = { RequestMethod.GET, RequestMethod.POST,
+        RequestMethod.DELETE, RequestMethod.OPTIONS })
 public class CatalogController {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -25,21 +27,48 @@ public class CatalogController {
     public ResponseEntity<List<BookDTO>> getBooks() {
         String url = supabaseUrl.replaceAll("/+$", "") + "/rest/v1/libros?select=*&order=created_at.desc";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("apikey", supabaseAnonKey);
-        headers.set("Authorization", "Bearer " + supabaseAnonKey);
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        HttpHeaders headers = createSupabaseHeaders();
 
         try {
             ResponseEntity<List<BookDTO>> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                new ParameterizedTypeReference<List<BookDTO>>() {}
-            );
+                    url,
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    new ParameterizedTypeReference<List<BookDTO>>() {
+                    });
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         }
+    }
+
+    @PostMapping
+    public ResponseEntity<String> createBook(@RequestBody BookDTO book) {
+        String url = supabaseUrl.replaceAll("/+$", "") + "/rest/v1/libros";
+
+        HttpHeaders headers = createSupabaseHeaders();
+        headers.set("Prefer", "return=representation");
+
+        HttpEntity<BookDTO> requestEntity = new HttpEntity<>(book, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body("Error al guardar libro en Supabase");
+        }
+    }
+
+    private HttpHeaders createSupabaseHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("apikey", supabaseAnonKey);
+        headers.set("Authorization", "Bearer " + supabaseAnonKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return headers;
     }
 }
